@@ -6,28 +6,38 @@ import (
 	"net/http"
 
 	"embed"
-
-	"github.com/gorilla/mux"
 )
 
 // content holds our static web server content.
-//go:embed static
-var content embed.FS
+// //go:embed static/index.html
+// var index []byte
+
+// //go:embed static/images/*
+// var images embed.FS
+
+// //go:embed static/assets/*
+// var assets embed.FS
+
+//go:embed static/*
+var static embed.FS
 
 func main() {
 	PORT := 3000
-	// var dir string
+	// assetsFs := http.FileServer(http.FS(assets))
+	// imagesFs := http.FileServer(http.FS(images))
 
-	// flag.StringVar(&dir, "dir", ".", "the directory to serve files from. Defaults to the current dir")
-	// flag.Parse()
-	dir := http.FileServer(http.Dir("./static"))
-	s := mux.NewRouter()
+	staticSub, _ := fs.Sub(static, "static")
+	staticFs := http.FS(staticSub)
+	// s := mux.NewRouter()
 
-	static, _ := fs.Sub(content, "static")
-	staticContent := http.FS(static)
+	http.Handle("/", http.FileServer(staticFs))
 
-	s.PathPrefix("/assets/").Handler(http.StripPrefix("/assets/", dir))
-	s.PathPrefix("/images/").Handler(http.StripPrefix("/images/", dir))
+	// s.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+	// 	w.WriteHeader(http.StatusOK)
+	// 	w.Write(index)
+	// })
+	// s.PathPrefix("/static/assets/").Handler(http.StripPrefix("/static/", assetsFs))
+	// s.PathPrefix("/static/images/").Handler(http.StripPrefix("/static/", imagesFs))
 
 	// s.Handle("/static/", http.FileServer(staticContent)).Methods("GET")
 	// s.PathPrefix("/static/").Handler(http.StripPrefix("/static/", http.FileServer(http.Dir("static")))).Methods("GET")
@@ -35,7 +45,7 @@ func main() {
 	// 	http.ServeFile(w, r, "./static/index.html")
 	// }).Methods("GET")
 
-	s.Handle("/", http.FileServer(staticContent))
+	// s.Handle("/", http.FileServer(staticContent))
 
-	http.ListenAndServe(fmt.Sprintf(":%d", PORT), s)
+	http.ListenAndServe(fmt.Sprintf(":%d", PORT), nil)
 }
