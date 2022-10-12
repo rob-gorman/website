@@ -1,3 +1,5 @@
+#!/bin/bash
+
 ver=$1
 docker stop server
 docker rm server
